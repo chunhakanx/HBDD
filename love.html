@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .love-container {
+            position: relative;
+            width: 100%;
+            height: 80vh;
+        }
+
+        .love-word {
+            position: absolute;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff0000;
+            animation: fade 2s infinite;
+            font-family: 'Arial', sans-serif;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        @keyframes fade {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0; transform: scale(0.5); }
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            padding: 0 10px;
+        }
+
+        button {
+            padding: 8px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #ff6b6b;
+            color: white;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #ff8e8e;
+        }
+
+        select, input {
+            padding: 5px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="love-container" id="loveContainer"></div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="colorMode">สี</label>
+            <select id="colorMode">
+                <option value="red">แดง</option>
+                <option value="pink">ชมพู</option>
+                <option value="rainbow">รุ้ง</option>
+                <option value="pastel">พาสเทล</option>
+                <option value="warm">โทนร้อน</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="speed">ความเร็ว</label>
+            <input type="range" id="speed" min="50" max="500" value="100">
+        </div>
+
+        <div class="control-group">
+            <label for="size">ขนาด</label>
+            <input type="range" id="size" min="1" max="10" value="3" step="0.5">
+        </div>
+
+        <div class="control-group">
+            <label>การควบคุม</label>
+            <button id="pauseBtn">หยุดชั่วคราว</button>
+        </div>
+    </div>
+
+    <script>
+        const container = document.getElementById('loveContainer');
+        const colorMode = document.getElementById('colorMode');
+        const speedControl = document.getElementById('speed');
+        const sizeControl = document.getElementById('size');
+        const pauseBtn = document.getElementById('pauseBtn');
+        
+        // โทนสีต่างๆ
+        const colorPalettes = {
+            red: ['#ff0000', '#cc0000', '#990000', '#ff3333', '#ff6666'],
+            pink: ['#ff69b4', '#ff1493', '#ff00ff', '#ff6347', '#ff4500'],
+            rainbow: ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'],
+            pastel: ['#ffb6c1', '#ffd700', '#98fb98', '#87cefa', '#dda0dd', '#ffa07a'],
+            warm: ['#ff4500', '#ff8c00', '#ffa500', '#ff6347', '#ff7f50', '#ff0000']
+        };
+        
+        let currentSpeed = 100;
+        let currentSize = 3;
+        let isPaused = false;
+        let intervalId;
+        
+        // ฟังก์ชันสร้างคำว่า LOVE
+        function createLove() {
+            if (isPaused) return;
+            
+            const love = document.createElement('div');
+            love.className = 'love-word';
+            love.textContent = 'LOVE';
+            love.style.left = Math.random() * 100 + 'vw';
+            love.style.top = Math.random() * 100 + 'vh';
+            
+            // เลือกสีตามโหมด
+            const palette = colorPalettes[colorMode.value];
+            love.style.color = palette[Math.floor(Math.random() * palette.length)];
+            
+            // ตั้งค่าความเร็วและขนาด
+            const duration = (Math.random() * 3 + 1) * (500 / currentSpeed);
+            love.style.animationDuration = duration + 's';
+            love.style.fontSize = (Math.random() * currentSize + currentSize) + 'rem';
+            
+            container.appendChild(love);
+            
+            // ลบ element เมื่อ animation จบ
+            setTimeout(() => {
+                love.remove();
+            }, duration * 1000);
+        }
+        
+        // เริ่มสร้างคำว่า LOVE
+        function startCreatingLove() {
+            clearInterval(intervalId);
+            intervalId = setInterval(createLove, 1000 / (currentSpeed / 50));
+            
+            //  LOVE เยอะๆ ตอนเริ่ม
+            for (let i = 0; i < 30; i++) {
+                setTimeout(createLove, i * 50);
+            }
+        }
+        
+        // อีเวนต์ listeners
+        colorMode.addEventListener('change', startCreatingLove);
+        
+        speedControl.addEventListener('input', function() {
+            currentSpeed = this.value;
+            startCreatingLove();
+        });
+        
+        sizeControl.addEventListener('input', function() {
+            currentSize = parseFloat(this.value);
+        });
+        
+        pauseBtn.addEventListener('click', function() {
+            isPaused = !isPaused;
+            this.textContent = isPaused ? 'เริ่มใหม่' : 'หยุดชั่วคราว';
+        });
+        
+        // เริ่มต้น
+        startCreatingLove();
+    </script>
+</body>
+</html>
